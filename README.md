@@ -8,16 +8,12 @@ Mezzo is the least clever programming language possible. It’s a reductive JSON
 
 **Base Template** 
 ```json
-{
-‘state’: {
-“some_name”: {
-“type”: ”a primative”,
-“value”: value
-}
-}
-“gestures”: [ 
-  {“type”: “a directive type”, … },
-		… ]
+{"state" : {
+		"some_name": { "some_attribute" : "value" }
+	  },
+ "directives" : [ 
+  {"type" : "a gesture type",
+   "parameters" : {"some": "parameters"}} ]
 }
 ```
 
@@ -28,7 +24,7 @@ as pathed namespaces, rather than one giant global namespace.
 
 
 ```json
-{“an object”: {“a nested object”: “attribute name”}}
+{“an object: {“a nested object”: “attribute name”}}
 ```
 
 **Primitives**
@@ -45,7 +41,7 @@ Any evaluation or operation using data must refer to a value store in the state 
 **Declaration**
 
 ```json
-{ “type”: “declaration” }
+{ “type”: “declaration }
 ```
 
 *Add a namespace to state. Give the namespace a value and type.*
