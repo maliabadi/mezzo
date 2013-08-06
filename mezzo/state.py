@@ -9,6 +9,10 @@ def dotform(array):
 def popleft(key):
     return key.split('.', 1)
 
+def is_mezzo_type(value):
+    return isinstance(value, (basestring, int, bool, list))
+
+
 class MezzoPath(object):
     """
     This is a utility class for handling dictionary-form
@@ -124,3 +128,4 @@ class MezzoState(object):
             if checkKey not in self.namespaces:
                 self.namespaces[checkKey] = dotdict({})
         self.namespaces[dotform(path.objectChain())] = path.value()
+
