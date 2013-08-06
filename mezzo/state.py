@@ -9,8 +9,27 @@ def dotform(array):
 def popleft(key):
     return key.split('.', 1)
 
+
 def is_mezzo_type(value):
     return isinstance(value, (basestring, int, bool, list))
+
+
+def popright(path):
+    return path.rsplit('.', 1)
+
+
+def read_form_to_write(path, value):
+    """
+    >>> readpath = {'foo': {'baz': 'bar'}}
+    >>> value = 1
+    >>> read_form_to_write(readpath, value)
+    {'foo': {'baz': {'bar' : 1}}
+    """
+    mp = MezzoPath(path)
+    dd = dotdict(path)
+    ddRoot, ddKey = popright(mp.dotForm())
+    dd[ddRoot] = {ddKey : value}
+    return dd
 
 
 class MezzoPath(object):

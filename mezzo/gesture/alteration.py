@@ -1,5 +1,5 @@
 from mezzo.gesture import Gesture
-from mezzo.state import MezzoState, MezzoPath, dotdict, dotform, popleft, is_mezzo_type
+from mezzo.state import MezzoState, MezzoPath, dotdict, dotform, popleft, popright, read_form_to_write, is_mezzo_type
 from operator import iadd, iand, idiv, ilshift, imod, isub, irshift, isub, ior, isub, imul, ipow
 
 
@@ -15,24 +15,6 @@ operator_map = {"andeq" : iand,
                 "minuseq": isub}
 
 
-def popright(path):
-    return path.rsplit('.', 1)
-
-
-def read_form_to_write(path, value):
-    """
-    >>> readpath = {'foo': {'baz': 'bar'}}
-    >>> value = 1
-    >>> read_form_to_write(readpath, value)
-    {'foo': {'baz': {'bar' : 1}}
-    """
-    mp = MezzoPath(path)
-    dd = dotdict(path)
-    ddRoot, ddKey = popright(mp.dotForm())
-    dd[ddRoot] = {ddKey : value}
-    return dd
-
-
 class Alteration(Gesture):
     """
     Format: 
@@ -41,13 +23,13 @@ class Alteration(Gesture):
          "right" : 1 }
 
 
-    >>> state = MezzoState({'foo': {'baz': {'bar': 0}}})
+    >>> state = MezzoState({'foo': {'baz': {'bar': 0}, 'adder': 4}})
     >>> alteration = Alteration(left={'foo': {'baz': 'bar'}},
                                 center="pluseq",
-                                right=1)
+                                right={'foo': 'adder'})
     >>> alteration.run()
     >>> state.namespaces
-    {'foo': {'baz': {'bar': 1}}}
+    {'foo': {'baz': {'bar': 4}, 'adder': 4}}
     """
 
     require = ['left', 'center', 'right' 'state']
@@ -58,21 +40,22 @@ class Alteration(Gesture):
     def run(self):
         if not self.center in operator_map:
             raise ValueError('Invalid center argument "%s"' % self.center)
-        readLeft = state.getNameSpace(self.left)
+        readLeft = self.state.getNameSpace(self.left)
+        readRight = self.state.getNameSpace(self.right)
         if not is_mezzo_type(readLeft):
             raise ValueError('Invalid Left Path "%s"' % self.left)
-        if not is_mezzo_type(self.right):
+        if not is_mezzo_type(readRight):
             raise ValueError('Invalid Right Argument "%s"' % self.right)
-        sendRight = operator_map[self.center](readLeft, self.right)
+        sendRight = operator_map[self.center](readLeft, readRight)
         writePath = read_form_to_write(self.left, sendRight)
-        state.setNameSpace(writePath)
+        self.state.setNameSpace(writePath)
 
 
 if __name__ == '__main__':
-    state = MezzoState({'foo': {'baz': {'bar': 0}}})
+    state = MezzoState({'foo': {'baz': {'bar': 0}, 'adder': 4}})
     alteration = Alteration(left={'foo': {'baz': 'bar'}},
                             center="pluseq",
-                            right=1)
+                            right={'foo': 'adder'})
     alteration.bindTo(state)
     alteration.run()
-    assert state.namespaces == {'foo': {'baz': {'bar': 1}}}
+    assert state.namespaces == {'foo': {'baz': {'bar': 4}, 'adder': 4}}
