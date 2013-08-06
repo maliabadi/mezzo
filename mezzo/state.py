@@ -1,4 +1,3 @@
-
 def dotform(array):
     """
     Just a helper to reduce the number of times the hideous
