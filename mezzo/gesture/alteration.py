@@ -1,25 +1,28 @@
+from operator import iadd, iand, idiv, ilshift,
+imod, isub, irshift, isub, ior, isub, imul, ipow
+
 from mezzo.gesture import Gesture
-from mezzo.state import MezzoState, MezzoPath, dotdict, dotform, popleft, popright, read_form_to_write, is_mezzo_type
-from operator import iadd, iand, idiv, ilshift, imod, isub, irshift, isub, ior, isub, imul, ipow
+from mezzo.state import MezzoState, MezzoPath, dotdict,
+dotform, popleft, popright, read_form_to_write, is_mezzo_type
 
 
-operator_map = {"andeq" : iand,
-                "oreq" : ior,
-                "upbit" : irshift,
-                "downbit" : ilshift, 
-                "modeq" : imod,
-                "diveq" : idiv,
-                "multeq" : imul,
-                "expeq" : ipow,
-                "pluseq" :iadd,
+operator_map = {"andeq": iand,
+                "oreq": ior,
+                "upbit": irshift,
+                "downbit": ilshift,
+                "modeq": imod,
+                "diveq": idiv,
+                "multeq": imul,
+                "expeq": ipow,
+                "pluseq": iadd,
                 "minuseq": isub}
 
 
 class Alteration(Gesture):
     """
-    Format: 
+    Format:
         {"left" : { "some object": "attribute name"},
-         "center" : "andeq", 
+         "center" : "andeq",
          "right" : 1 }
 
 
@@ -37,18 +40,31 @@ class Alteration(Gesture):
     def __init__(self, **kwargs):
         super(Alteration, self).__init__('alteration', **kwargs)
 
+    @property
+    def readLeft(self):
+        return self.state.getNameSpace(self.left)
+
+    @property
+    def readRight(self):
+        return self.state.getNameSpace(self.right)
+
+    @property
+    def sendRight(self):
+        return operator_map[self.center](self.readLeft,
+                                         self.readRight)
+
+    def send(self):
+        self.state.setNameSpace(read_form_to_write(self.left,
+                                                   self.sendRight))
+
     def run(self):
         if not self.center in operator_map:
             raise ValueError('Invalid center argument "%s"' % self.center)
-        readLeft = self.state.getNameSpace(self.left)
-        readRight = self.state.getNameSpace(self.right)
-        if not is_mezzo_type(readLeft):
+        if not is_mezzo_type(self.readLeft):
             raise ValueError('Invalid Left Path "%s"' % self.left)
-        if not is_mezzo_type(readRight):
+        if not is_mezzo_type(self.readRight):
             raise ValueError('Invalid Right Argument "%s"' % self.right)
-        sendRight = operator_map[self.center](readLeft, readRight)
-        writePath = read_form_to_write(self.left, sendRight)
-        self.state.setNameSpace(writePath)
+        self.send()
 
 
 if __name__ == '__main__':

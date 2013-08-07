@@ -1,4 +1,3 @@
-
 from mezzo.gesture import Gesture
 
 class Yielding(Gesture):

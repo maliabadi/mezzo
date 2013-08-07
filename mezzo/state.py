@@ -28,7 +28,7 @@ def read_form_to_write(path, value):
     mp = MezzoPath(path)
     dd = dotdict(path)
     ddRoot, ddKey = popright(mp.dotForm())
-    dd[ddRoot] = {ddKey : value}
+    dd[ddRoot] = {ddKey: value}
     return dd
 
 
@@ -70,6 +70,7 @@ class dotdict(dict):
     """
     Thanks to Mike DeSimone on Stack Overflow
     """
+
     def __init__(self, value=None):
         if value is None:
             pass
@@ -77,7 +78,7 @@ class dotdict(dict):
             for key in value:
                 self.__setitem__(key, value[key])
         else:
-            raise TypeError, 'expected dict'
+            raise TypeError('expected dict')
 
     def __setitem__(self, key, value):
         if '.' in key:
@@ -147,4 +148,3 @@ class MezzoState(object):
             if checkKey not in self.namespaces:
                 self.namespaces[checkKey] = dotdict({})
         self.namespaces[dotform(path.objectChain())] = path.value()
-
