@@ -107,9 +107,9 @@ class Compare(Gesture):
         return self.last()
 
     def compareOne(self, left, center, right):
-        readLeft = state.getNameSpace(left)
+        readLeft = self.state.getNameSpace(left)
         center = comparison_map[center]
-        readRight = state.getNameSpace(right)
+        readRight = self.state.getNameSpace(right)
         self.evalchain.append(center(readLeft, readRight))
 
 

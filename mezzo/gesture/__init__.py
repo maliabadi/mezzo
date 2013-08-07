@@ -29,3 +29,4 @@ class Gesture(object):
         for name in self.require:
             if not hasattr(self, name):
                 raise ValueError
+

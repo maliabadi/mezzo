@@ -1,9 +1,7 @@
-from operator import iadd, iand, idiv, ilshift,
-imod, isub, irshift, isub, ior, isub, imul, ipow
+from operator import iadd, iand, idiv, ilshift, imod, isub, irshift, isub, ior, isub, imul, ipow
 
 from mezzo.gesture import Gesture
-from mezzo.state import MezzoState, MezzoPath, dotdict,
-dotform, popleft, popright, read_form_to_write, is_mezzo_type
+from mezzo.state import MezzoState, MezzoPath, dotdict, dotform, popleft, popright, read_form_to_write, is_mezzo_type
 
 
 operator_map = {"andeq": iand,
