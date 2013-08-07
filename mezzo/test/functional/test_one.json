@@ -1,0 +1,57 @@
+{
+  "objects": {
+    "foo": {
+      "adder": 1
+    }
+  },
+  "directives": [
+    {
+      "namespace": {
+        "foo": {
+          "baz": {
+            "bar": 0
+          }
+        }
+      },
+      "type": "declaration"
+    },
+    {
+      "body": [
+        {
+          "right": {
+            "foo": "adder"
+          },
+          "type": "alteration",
+          "center": "pluseq",
+          "left": {
+            "foo": {
+              "baz": "bar"
+            }
+          }
+        }
+      ],
+      "namespace": {
+        "foo": "myfunction"
+      },
+      "type": "binding",
+      "arguments": {
+        "argtwo": 2,
+        "argone": 1
+      },
+      "locals": [
+        "localone",
+        "localtwo"
+      ]
+    },
+    {
+      "namespace": {
+        "foo": "myfunction"
+      },
+      "type": "invocation",
+      "arguments": {
+        "argtwo": 2,
+        "argone": 2
+      }
+    }
+  ]
+}

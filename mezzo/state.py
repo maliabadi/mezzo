@@ -121,8 +121,8 @@ class dotdict(dict):
 
 class MezzoState(object):
 
-    def __init__(self, namespaces={}):
-        self.namespaces = dotdict(namespaces)
+    def __init__(self, objects={}):
+        self.namespaces = dotdict(objects)
 
     def getNameSpace(self, path):
         """
