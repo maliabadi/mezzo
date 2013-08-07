@@ -2,8 +2,7 @@ from mezzo.state import MezzoState
 
 
 gestures = ['declaration', 'alteration', 'iteration',
-            'recursion', 'flow', 'comparison',
-            'binding', 'invocation', 'block']
+            'flow', 'comparison', 'binding', 'invocation']
 
 
 class Gesture(object):

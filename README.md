@@ -2,7 +2,7 @@
 
 ## Interpreter-Agnostic Script Notation
 
-Mezzo is the least clever programming language possible. It’s a reductive JSON representation of a constrained set of 9 distinct **programming gestures**, as well as a state machine of a program’s current object space. It’s designed to be interpreted, compiled, and operated on asynchronously by client and server-side programs written in Ruby, Python, Javascript, whatever -- Mezzo really doesn't care. By constraining the number of different of different lexical and syntactic concepts available and confining the program to a **state-based, procedural** structure, we eliminate abstract syntax patterns that translate ambiguously in other scripting languages. You could write Mezzo programs and have them interpreted in Python, Ruby or Javascript. Or you could write Python, Ruby or Javascript and have it converted to Mezzo. That's the idae anyway.
+Mezzo is the least clever programming language possible. It’s a reductive JSON representation of a constrained set of 7 distinct, low-level **programming gestures**, as well as a state machine of a program’s current object space. It’s designed to be interpreted, compiled, and operated on asynchronously by client and server-side programs written in Ruby, Python, Javascript, whatever -- Mezzo really doesn't care. By constraining the number of different of different lexical and syntactic concepts available and confining the program to a **state-based, procedural** structure, we eliminate abstract syntax patterns that translate ambiguously in other scripting languages. You could write Mezzo programs and have them interpreted in Python, Ruby or Javascript. Or you could write Python, Ruby or Javascript and have it converted to Mezzo. That's the idea anyway.
 
 ### Basics
 
@@ -91,19 +91,6 @@ Any evaluation or operation using data must refer to a value store in the state 
 }
 ```
 
-**Recursion**
-
-```json
-{ "type": "recursion" }
-```
-
-*Basically for breakable while loop.*
-
-```json
-	{ "break": { "type": "comparison", "chain" : [] },
-      "do": [ { "type" : "gesture", "body": "..." } ] }
-```
-
 **Flow**
 ```json
 { "type": "flow" }
@@ -167,6 +154,7 @@ Relational Operators
       "locals" : [ "attribute name", "attibute name", "attribute name"],
       "directives" : [ { "type" : "gesture", "body": "..." } ] }
 ```
+
 **Invocation**
 ```json
 { "type" : "invocation" }
@@ -177,15 +165,4 @@ Relational Operators
 	{ "namespace": {"an object": {"a nested object": "attribute name"}},
       "arguments": { "named argument" : { "some": "namespace path" },
                      "a named argument": { "some": "namespace path" }}}
-```
-
-**Block**
-
-*A very limited interpretation of the functionality of blocks of code. Evaluates a set of gestures with specified open, close and exception gesture lists. The "except" attribute defaults to "die" but can be set to "recover" in which case the interpreting client recovers from ALL failures in the evaluated "body" gestures.*
-
-```json
-	{"open": [ { "type" : "gesture", "body": "..." } ],
-	"close": [ { "type" : "gesture", "body": "..." } ],
-	"body": [ { "type" : "gesture", "body": "..." } ],
-	"except" : "die" }
 ```
