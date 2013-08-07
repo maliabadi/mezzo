@@ -33,7 +33,7 @@ class Alteration(Gesture):
     {'foo': {'baz': {'bar': 4}, 'adder': 4}}
     """
 
-    require = ['left', 'center', 'right' 'state']
+    require = ['left', 'center', 'right', 'state']
 
     def __init__(self, **kwargs):
         super(Alteration, self).__init__('alteration', **kwargs)

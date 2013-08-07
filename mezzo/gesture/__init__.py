@@ -30,3 +30,9 @@ class Gesture(object):
             if not hasattr(self, name):
                 raise ValueError
 
+    def serialize(self):
+        struct = {'type': self.kind}
+        for name in self.require:
+            if name != 'state':
+                struct[name] = getattr(self, name)
+        return struct
