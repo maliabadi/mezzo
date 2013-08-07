@@ -1,7 +1,8 @@
 from setuptools import setup, find_packages
 
+
 setup(
-    name = "mezzo",
-    version = "0.1",
-    packages = find_packages(),
+    name="mezzo",
+    version="0.1",
+    packages=find_packages(),
 )

@@ -1,5 +1,6 @@
 from mezzo.gesture import Gesture
 
+
 class Declaration(Gesture):
     """
     Format:

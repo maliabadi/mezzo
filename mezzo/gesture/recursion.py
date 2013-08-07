@@ -1,8 +1,9 @@
 from mezzo.gesture import Gesture
 
+
 class Recursion(Gesture):
     """
-    Format: 
+    Format:
         { "break": { "type": "comparison", "chain" : [] },
           "do": [ { "type" : "gesture", "body": "..." } ] }
     """

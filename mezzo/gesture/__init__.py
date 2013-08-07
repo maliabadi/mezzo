@@ -1,12 +1,15 @@
 from mezzo.state import MezzoState
 
-"""
-Base Gesture class and the list of supported gesture types
-"""
 
-gestures = ['declaration', 'alteration', 'iteration', 'recursion', 'flow', 'comparison', 'binding', 'invocation', 'block']
+gestures = ['declaration', 'alteration', 'iteration',
+            'recursion', 'flow', 'comparison',
+            'binding', 'invocation', 'block']
+
 
 class Gesture(object):
+    """
+    Base Gesture class and the list of supported gesture types
+    """
 
     require = []
 
@@ -25,5 +28,4 @@ class Gesture(object):
     def validate(self):
         for name in self.require:
             if not hasattr(self, name):
-                raise ValueError("Declaration Gesture missing required argument: %s" % name)
-
+                raise ValueError

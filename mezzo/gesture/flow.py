@@ -1,8 +1,9 @@
 from mezzo.gesture import Gesture
 
+
 class Flow(Gesture):
     """
-    Format: 
+    Format:
         { "chain": [
         { "if": { "type": "comparison", "chain" : []},
           "do": [ { "type" : "gesture", "body" : "..." } ],

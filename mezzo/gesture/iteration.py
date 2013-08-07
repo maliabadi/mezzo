@@ -1,16 +1,21 @@
 from mezzo.gesture import Gesture
 from mezzo.gesture.alteration import Alteration
-from mezzo.state import MezzoState, MezzoPath, dotdict, dotform, popleft, popright, read_form_to_write, is_mezzo_type
+from mezzo.state import MezzoState, MezzoPath, dotdict,
+dotform, popleft, popright,
+read_form_to_write, is_mezzo_type
+
 
 class Iteration(Gesture):
     """
-    Format: 
+    Format:
         { "each" : {"object": "attribute"},
           "local" : {"object": "attribute"},
           "do" : [ { "type" : "gesture", "body" : "..." } ]
         }
 
-    >>> state = MezzoState({'foo': {'baz': {'bar': [1,2,3]}, 'counter': 0, 'adder': 3}})
+    >>> state = MezzoState({'foo': {'baz': {'bar': [1,2,3]},
+                                    'counter': 0,
+                                    'adder': 3}})
     >>> each = {'foo': {'baz' : 'bar'}}
     >>> local = {'foo': 'index'}
     >>> alteration = Alteration(left={'foo': 'counter'},
@@ -31,7 +36,6 @@ class Iteration(Gesture):
     def __init__(self, **kwargs):
         super(Iteration, self).__init__('iteration', **kwargs)
 
-
     def run(self):
         itereach = state.getNameSpace(self.each)
         if not isinstance(itereach, list):
@@ -40,10 +44,9 @@ class Iteration(Gesture):
             for gest in self.do:
                 gest.run()
 
-
     def setindex(self, index=0):
         state.setNameSpace(read_form_to_write(self.local, index))
-    
+
     def getindex(self):
         return state.getNameSpace(self.local)
 
@@ -52,8 +55,10 @@ class Iteration(Gesture):
 
 
 if __name__ == "__main__":
-    state = MezzoState({'foo': {'baz': {'bar': [1,2,3]}, 'counter': 0, 'adder': 3}})
-    each = {'foo': {'baz' : 'bar'}}
+    state = MezzoState({'foo': {'baz': {'bar': [1, 2, 3]},
+                                'counter': 0,
+                                'adder': 3}})
+    each = {'foo': {'baz': 'bar'}}
     local = {'foo': 'index'}
     alteration = Alteration(left={'foo': 'counter'},
                             center="pluseq",
@@ -64,4 +69,6 @@ if __name__ == "__main__":
     alteration.bindTo(state)
     iteration.bindTo(state)
     iteration.run()
-    assert state.namespaces == {'foo': {'counter': 9, 'baz': {'bar': [1, 2, 3]}, 'adder': 3}}
+    assert state.namespaces == {'foo': {'counter': 9,
+                                        'baz': {'bar': [1, 2, 3]},
+                                        'adder': 3}}

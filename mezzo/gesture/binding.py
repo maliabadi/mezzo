@@ -1,10 +1,11 @@
 from mezzo.gesture import Gesture
 
+
 class Binding(Gesture):
     """
-    Format: 
+    Format:
         { "namespace": {"an object": {"a nested object": "attribute name"}},
-          "arguments": { "a named argument" : "default value", 
+          "arguments": { "a named argument" : "default value",
                          "a named argument" : "default value" },
           "locals" : [ "attribute name", "attibute name", "attribute name"],
           "directives" : [ { "type" : "gesture", "body": "..." } ] }

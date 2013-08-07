@@ -1,8 +1,9 @@
 from mezzo.gesture import Gesture
 
+
 class Invocation(Gesture):
     """
-    Format: 
+    Format:
         { "namespace": {"an object": {"a nested object": "attribute name"}},
           "arguments": { "named argument" : { "some": "namespace path" },
                          "a named argument": { "some": "namespace path" }}}

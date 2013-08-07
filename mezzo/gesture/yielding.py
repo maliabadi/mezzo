@@ -1,8 +1,9 @@
 from mezzo.gesture import Gesture
 
+
 class Yielding(Gesture):
     """
-    Format: 
+    Format:
         {"open": [ { "type" : "gesture", "body": "..." } ],
         "close": [ { "type" : "gesture", "body": "..." } ],
         "body": [ { "type" : "gesture", "body": "..." } ],
