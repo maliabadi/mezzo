@@ -111,3 +111,9 @@ if __name__ == "__main__":
     alteration.bindTo(state)
     flow.bindTo(state)
     flow.run()
+    assert state.namespaces == {'foo': {'a': 0,
+                                        'c': 2,
+                                        'b': 1,
+                                        'd': 0,
+                                        'baz': {'bar': 1},
+                                        'adder': 1}}
