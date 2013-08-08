@@ -13,16 +13,25 @@ function MezzoState(obj){
 }
 
 MezzoState.prototype.generatePathChain = function(ns){
+    // takes a nested set of objects that reference
+    // a state namespace and spits out dot notation
+    // e.g. {'foo': {'baz': 'bar'}} becomes ['foo', 'baz', 'bar']
     var chain = [];
     var nsdup = ns;
     while (nsdup.constructor.name == "Object"){
         for (attr in nsdup){
             if (this.supportedTypes.indexOf(nsdup[attr].constructor.name) > -1){
+                // push both the key and the value onto the chain
                 chain.push(attr)
                 chain.push(nsdup[attr]);
+                // stop recursion
                 nsdup = false;
+                // break the loop
+                break;
             } else {
+                // push the attribute name onto the chain
                 chain.push(attr);
+                // lower the reference depth
                 nsdup = nsdup[attr];
             }
         }
