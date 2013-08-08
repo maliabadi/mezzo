@@ -1,84 +1,82 @@
 // Javascript interpreter for Mezzo scripts
 // Deeply unfinished, untested.
 
-Mezzo = new Object();
-
-Mezzo.alterationGesture = function(obj){
+function MezzoState(obj){
+    this.supportedTypes = ["Array",
+                           "String",
+                           "Boolean",
+                           "Number"];
+    this.objects = {};
     for (attribute in obj){
-        this[attribute] = obj[attribute];
+        this.objects[attribute] = obj[attribute];
     }
-    this.run = function(){
-
-    };
-    return this;
 }
 
-Mezzo.declarationGesture = function(obj){
-    for (attribute in obj){
-        this[attribute] = obj[attribute];
+MezzoState.prototype.generatePathChain = function(ns){
+    var chain = [];
+    var nsdup = ns;
+    while (nsdup.constructor.name == "Object"){
+        for (attr in nsdup){
+            if (this.supportedTypes.indexOf(nsdup[attr].constructor.name) > -1){
+                chain.push(attr)
+                chain.push(nsdup[attr]);
+                nsdup = false;
+            } else {
+                chain.push(attr);
+                nsdup = nsdup[attr];
+            }
+        }
     }
-    this.run = function(){
-
-    };
-    return this;
+    return chain;
 }
 
-Mezzo.bindingGesture = function(obj){
-    for (attribute in obj){
-        this[attribute] = obj[attribute];
+MezzoState.prototype.getNameSpace = function(ns){
+    var nsChain = this.generatePathChain(ns);
+    var referenceDepth = this.objects;
+    for (i in nsChain){
+        var link = nsChain[i];
+        if (!referenceDepth.hasOwnProperty(link)){
+            referenceDepth[link] = {};
+        }
+        referenceDepth = referenceDepth[link];
     }
-    this.run = function(){
-
-    };
-    return this;
+    return referenceDepth;
 }
 
-Mezzo.comparisonGesture = function(obj){
-    for (attribute in obj){
-        this[attribute] = obj[attribute];
+MezzoState.prototype.setNameSpace = function(ns, v){
+    var nsChain = this.generatePathChain(ns);
+    var referenceDepth = this.objects;
+    for (i in nsChain){
+        var link = nsChain[i];
+        if (i < nsChain.length - 2){
+            if (!referenceDepth.hasOwnProperty(link)){
+                // make the refrence depth preceding the literal is an object
+                // that accepts literal assignemtn
+                referenceDepth[link] = {};
+            }
+            // lower reference depth
+            referenceDepth = referenceDepth[link];
+        } else {
+            // parse the last two arguments in the chain as a literal
+            if (i == (nsChain.length - 2)){
+                referenceDepth[link] = nsChain[nsChain.length-1];
+                break;
+            }
+        }
     }
-    this.run = function(){
-
-    };
-    return this;
 }
 
-Mezzo.flowGesture = function(obj){
-    for (attribute in obj){
-        this[attribute] = obj[attribute];
-    }
-    this.run = function(){
-
-    };
-    return this;
+function Mezzo (){
+    this.state = new MezzoState({});
 }
 
-Mezzo.invocationGesture = function(obj){
-    for (attribute in obj){
-        this[attribute] = obj[attribute];
-    }
-    this.run = function(){
-
-    };
-    return this;
+Mezzo.prototype.declarationGesture = function(ns){
+    // just declares the given path namespace
+    this.state.setNameSpace(ns);
 }
 
-Mezzo.iterationGesture = function(obj){
-    for (attribute in obj){
-        this[attribute] = obj[attribute];
-    }
-    this.run = function(){
-
-    };
-    return this;
-}
-
-Mezzo.buildProgram = function(obj){
-    for (attribute in obj){
-        this[attribute] = obj[attribute];
-    }
-    this.run = function(){
-
-    };
-    return this;
+function runTests(){
+    m = new Mezzo();
+    m.state.setNameSpace({'foo': {'baz': 'bar'}});
+    console.log(m.state.objects);
 }

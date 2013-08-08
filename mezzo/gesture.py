@@ -432,6 +432,7 @@ class Compare(Gesture):
         readRight = self.state.getNameSpace(right)
         self.evalchain.append(center(readLeft, readRight))
 
+
 key_to_class = {'declaration': Declaration,
                 'alteration': Alteration,
                 'iteration': Iteration,
