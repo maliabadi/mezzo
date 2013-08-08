@@ -318,11 +318,13 @@ class Iteration(Gesture):
 
     def run(self):
         itereach = self.state.getNameSpace(self.each)
+        self.setIndex()
         if not isinstance(itereach, list):
             raise ValueError('Invalid "each" argument for Iteration Gesture')
         for item in itereach:
             for gest in self.do:
                 gest.run()
+                self.increment()
 
     def setindex(self, index=0):
         state.setNameSpace(read_form_to_write(self.local, index))
