@@ -1,7 +1,5 @@
 // Javascript interpreter for Mezzo scripts
 
-// BEGIN MezzoState 
-
 function MezzoState(obj){
     this.supportedTypes = ["Array",
                            "String",
@@ -80,9 +78,8 @@ MezzoState.prototype.setNameSpace = function(ns, v){
     }
 }
 
-// END MezzoState
 
-// BEGIN Mezzo Core
+// Begin core...
 
 function Mezzo (objects){
     // really trying to discourage any direct interaction
