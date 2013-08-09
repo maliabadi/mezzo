@@ -1,5 +1,6 @@
 // Javascript interpreter for Mezzo scripts
-// Deeply unfinished, untested.
+
+// BEGIN MezzoState 
 
 function MezzoState(obj){
     this.supportedTypes = ["Array",
@@ -78,6 +79,10 @@ MezzoState.prototype.setNameSpace = function(ns, v){
         }
     }
 }
+
+// END MezzoState
+
+// BEGIN Mezzo Core
 
 function Mezzo (objects){
     // really trying to discourage any direct interaction
@@ -205,37 +210,68 @@ Mezzo.prototype.compare = function(obj){
         for (i in obj.chain){
             co = obj.chain[i];
             if ( co.hasOwnProperty('continue') ){
+                // handle relational operators
+                // the appear between comparisons
                 if ( co.continue == 'and' ){
+                    // if the left operand is false
+                    // break and stop recursion immediately
                     if (!lasteval()){
                         procede = false;
-                        continue;
+                        break;
                     } else {
+                        // prepare to break if upcoming
+                        // right operand is false
                         breakonfalse = true;
                     }
                 }
                 if ( co.continue == 'or' ){
-                    breakonfalse = true;
+                    if (lasteval()){
+                        // if the left argument evaluated
+                        // as true, don't be ready to break
+                        // if the next statement comes out false
+                        breakonfalse = false;
+                    } else {
+                        // if the last statement was false
+                        // break if the next statement is false
+                        breakonfalse = true;
+                    }
                     continue;
                 }
                 if ( co.continue == 'xand'){
+                    // not both
                     if (!lasteval()) {
-                        breakonfalse = true;
+                        // pass if the last statement evaluated
+                        // to false, and don't break if the next
+                        // statement evaluates to false
+                        breakonefalse = false;
                     } else {
-                        self.breakonfalse = false;
+                        // if the first statement evaluated to true
+                        // the xand criteria is categorically broken
+                        // break recursion
+                        procede = false;
+                        // break loop
+                        break;
                     }
                     continue;
                 }
                 if (co.continue == 'xor'){
+                    // one of the two operands is true
+                    // but not both of them
                     if (!lasteval()) {
                         breakonfalse = false;
                     } else {
-                        self.breakonfalse = true;
+                        breakonfalse = true;
                     }
                     continue;
                 }
             } else {
+                // rather than the namespace refrence
+                // the actual data those namespaces refer to
                 var left = this.get(co.left);
                 var right = this.get(co.right);
+                // a bit of ugliness that is unavoidable
+                // until someone tells me a way to invoke
+                // Javascript comparison operators by name
                 switch(co.center){
                     case "eq":
                         var evaluation = left == right;
@@ -254,23 +290,43 @@ Mezzo.prototype.compare = function(obj){
                         break;
                 }
                 if (breakonfalse && !lasteval()){
+                    // if the breakonfalse state is set to true
+                    // and the last comparison evaluated to false
+                    // then stop recursion
                     procede = false;
+                    // and break the loop
                     break;
                 }
             }
         }
+        // if every comparison in the chain has completed without
+        // breaking, stop recursion
         procede = false;
     }
     return lasteval();
 }
 
 Mezzo.prototype.flow = function(obj){
-    // TODO
-    // {'chain': [{'condition': 'a', 'do': ['b'], 'stop': 'c'}]
+    if ( obj.constructor.name != "Object" || !obj.hasOwnProperty('chain')) {
+        throw "Invalid argument passed to Mezzo.flow function";
+    }
+    // iterate over chain
     for (i in obj.chain){
+        // each link in the chain looks like this:
+        // {'comparison': {'chain': [{'left': 'a', 'center': 'b', 'right': 'c'}]}
+        //  'do': [{'type': 'somegesture': {'foo': 'bar'}}]}
+        //  'stop': true}
         var link = obj.chain[i];
-        evaluation = this.compare(link.comparison);
-        if ( evaluation == true ){
+        if (!link.constructor.name == "Object"){
+            throw "Misconstructed Flow Element";
+        }
+        // check the link for required properties
+        var required = ['comparison', 'do', 'stop'];
+        for (r in required){
+            if(!link.hasOwnProperty(required[r])) throw "Misconstructed Flow Element";
+        }
+        // if the evaluation gesture evaluates to true
+        if ( this.compare(link.comparison) == true ){
             for (k in link.do){
                 this.deserializeGesture(link.do[k]);
             }
@@ -297,7 +353,10 @@ Mezzo.prototype.binding = function(obj){
 }
 
 Mezzo.prototype.invoke = function(obj){
-    // TODO
+    required = ['namespace', 'arguments']
+    for ( r in required ) {
+        if ( !obj.hasOwnProperty(required[r])) throw "Misconstructed Invocation";
+    }
     // {'namespace': 'a', 'arguments': {}}
     var func = this.get(obj.namespace);
     // func[arguments] = obj.arguments
@@ -306,12 +365,15 @@ Mezzo.prototype.invoke = function(obj){
     for ( i in chain ){
         var link = chain[i];
         if (i >= chain.length - 1){
+            // wait until the last reference in the chain
+            // and reset the function' attributes 
             func.arguments = obj.arguments;
             referenceDepth[link] = func;
             break;
         }
         referenceDepth = referenceDepth[link];
     }
+
     for ( i in func.body ) {
         this.deserializeGesture(func.body[i]);
     }
@@ -320,6 +382,14 @@ Mezzo.prototype.invoke = function(obj){
 
 
 Mezzo.prototype.deserializeGesture = function(obj){
+    supported = ['declaration', 'iteration', 'comparison', 
+                 'invocation', 'flow', 'binding', 'alteration'];
+    if (!obj.constructor.name == "Object"){
+        throw "Invalid argument passed to Mezzo.deserializeGesture function";
+    }
+    if ( supported.indexOf(obj.type) == -1) {
+        throw "Unsupported Gesture Type"
+    }
     switch(obj.type)
     {
         case 'declaration':
@@ -339,6 +409,8 @@ Mezzo.prototype.deserializeGesture = function(obj){
     }
 }
 
+
+// BEGIN TESTS
 
 function testSetState(){
     m = new Mezzo();
@@ -432,8 +504,8 @@ function testInvocation(){
     var m = new Mezzo({'objects': {'foo': {'varone': 0, 'adder': 1}}});
     m.binding(bound);
     // should show 0
-    console.log(m.state.foo.varone)
-    m.invoke({'namespace': {'foo' : 'myfunction'}, 'arguments': {'argone': 3, 'argtwo': 4}})
+    console.log(m.state.foo.varone);
+    m.invoke({'namespace': {'foo' : 'myfunction'}, 'arguments': {'argone': 3, 'argtwo': 4}});
     // should show 1
-    console.log(m.state.foo.varone)
+    console.log(m.state.foo.varone);
 }
