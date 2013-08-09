@@ -46,7 +46,6 @@ module Mezzo
 			
 			def run
 				validate
-				state.
 			end
 		end
 

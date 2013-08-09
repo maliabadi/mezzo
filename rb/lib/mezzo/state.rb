@@ -9,14 +9,9 @@ module Mezzo
 		end
 
 		def hashify_namespace ns
-			for k,v in ns
-
 		end
 
 		def chainify_namespace ns
-			ns.map do |key,value|
-				
-			end
 		end
 
 	end
