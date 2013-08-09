@@ -1,6 +1,7 @@
 require 'json'
 
 module Mezzo
+
 	class Program
 
 		def deserialize(data)
@@ -12,4 +13,5 @@ module Mezzo
 		end
 
 	end
+	
 end

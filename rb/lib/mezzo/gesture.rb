@@ -22,6 +22,8 @@ module Mezzo
 				@@required
 			end
 
+			attr :state
+
 			def initialize(params={})
 				params.each &method(:instance_variable_set)
 			end
@@ -32,13 +34,19 @@ module Mezzo
 				end
 			end
 
+			def attach(instance)
+				@state = instance
+			end
+
+
 		end
 
 		class Declaration < GestureBase
 			needs :namespace
 			
 			def run
-				#TODO
+				validate
+				state.
 			end
 		end
 
@@ -52,24 +60,48 @@ module Mezzo
 		end
 
 		class Binding < GestureBase
-			needs :namespace, :arguments, :locals, :body
 
+			needs :namespace, :arguments, :locals, :body
+			
+			def run
+				#TODO
+			end
 		end
 
 		class Comparison < GestureBase
+
 			needs :left, :center, :right
+			
+			def run
+				#TODO
+			end
 		end
 
 		class Flow < GestureBase
+
 			needs :chain
+			
+			def run
+				#TODO
+			end
 		end
 
 		class Invocation < GestureBase
+
 			needs :namespace, :arguments
+			
+			def run
+				#TODO
+			end
 		end
 
 		class Iteration < GestureBase
+
 			needs :each, :local, :do
+			
+			def run
+				#TODO
+			end
 		end
 
 	end
