@@ -297,10 +297,6 @@ Mezzo.prototype.invoke = function(obj){
 }
 
 
-
-
-
-
 Mezzo.prototype.deserializeGesture = function(obj){
     switch(obj.type)
     {
