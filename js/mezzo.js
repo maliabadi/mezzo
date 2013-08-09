@@ -55,16 +55,13 @@ MezzoState.prototype.getNameSpace = function(ns){
 MezzoState.prototype.setNameSpace = function(ns, v){
     var nsChain = this.generatePathChain(ns);
     var referenceDepth = this.objects;
-    if (v){
-        var stopAt = nsChain.length - 1;
-    } else {
-        var stopAt = nsChain.length - 2;
-    }
+    var stopAt = nsChain.length - 1;
+    if (!v) { stopAt -= 1; }
     for (i in nsChain){
         var link = nsChain[i];
         if (i < stopAt){
             if (!referenceDepth.hasOwnProperty(link)){
-                // make the refrence depth preceding the literal is an object
+                // make sure the reference depth preceding the literal is an object
                 // that accepts literal assignemtn
                 referenceDepth[link] = {};
             }
@@ -73,11 +70,9 @@ MezzoState.prototype.setNameSpace = function(ns, v){
         } else {
             // parse the last two arguments in the chain as a literal
             if (i == (stopAt)){
-                if(v){
-                    referenceDepth[link] = v;
-                } else {
-                    referenceDepth[link] = nsChain[nsChain.length-1];
-                }
+                var right = v;
+                if (!right){ right = nsChain[nsChain.length-1] }
+                referenceDepth[link] = right;
                 break;
             }
         }
@@ -115,6 +110,46 @@ Mezzo.prototype.declare = function(obj){
     this.set(obj.namespace);
 }
 
+Mezzo.prototype.alter = function(obj){
+    // e.g. {'left': 'a', 'center': 'b', 'right': 'c'}
+    var left = this.get(obj.left);
+    var right = this.get(obj.right);
+    var alteredValue;
+    switch(obj.center){
+        case "andeq":
+            alteredValue = left && right;
+            break;
+        case "andeq":
+            alteredValue = left || right;
+            break;
+        case "upbit":
+            alteredValue = left >> right;
+            break;
+        case "downbit":
+            alteredValue = left >> right;
+            break;
+        case "modeq":
+            alteredValue = left % right;
+            break;
+        case "diveq":
+            alteredValue = left / right;
+            break;
+        case "multeq":
+            alteredValue = left * right;
+            break;
+        case "expeq":
+            alteredValue = Math.pow(left, right);
+            break;
+        case "pluseq":
+            alteredValue = left + right;
+            break;
+        case "minuseq":
+            alteredValue = left - right;
+            break;
+    }
+    this._state.setNameSpace(obj.left, alteredValue);
+}
+
 Mezzo.prototype.each = function(obj){
     // the 'each' attribute is a namespace
     // that refers to an array object in the instance state
@@ -133,29 +168,137 @@ Mezzo.prototype.each = function(obj){
 }
 
 Mezzo.prototype.compare = function(obj){
+    // e.g. {'chain': [{'left': 'a', 'center': 'b', right: 'c'}]}
+    var evalchain = [];
+    var breakonfalse = false;
+    var procede = true;
+    var lasteval = function(){
+        if(!evalchain.length){
+            return true;
+        } else {
+            return evalchain[evalchain.length - 1];
+        }
+    }
+    while ( procede ){
+        for (i in obj.chain){
+            co = obj.chain[i];
+            if ( co.hasOwnProperty('continue') ){
+                if ( co.continue == 'and' ){
+                    if (!lasteval()){
+                        procede = false;
+                        continue;
+                    } else {
+                        breakonfalse = true;
+                    }
+                }
+                if ( co.continue == 'or' ){
+                    breakonfalse = true;
+                    continue;
+                }
+                if ( co.continue == 'xand'){
+                    if (!lasteval()) {
+                        breakonfalse = true;
+                    } else {
+                        self.breakonfalse = false;
+                    }
+                    continue;
+                }
+                if (co.continue == 'xor'){
+                    if (!lasteval()) {
+                        breakonfalse = false;
+                    } else {
+                        self.breakonfalse = true;
+                    }
+                    continue;
+                }
+            } else {
+                var left = this.get(co.left);
+                var right = this.get(co.right);
+                switch(co.center){
+                    case "eq":
+                        var evaluation = left == right;
+                        break;
+                    case 'ne':
+                        var evaluation = left != right;
+                        break;
+                    case 'lt':
+                        var evaluation = left < right;
+                        break;
+                    case 'gt':
+                        var evaluation = left > right;
+                        break;
+                    case 'is':
+                        var evaluation = right && left;
+                        break;
+                }
+                if (breakonfalse && !lasteval()){
+                    procede = false;
+                    break;
+                }
+            }
+        }
+        procede = false;
+    }
+    return lasteval();
+}
+
+Mezzo.prototype.flow = function(obj){
     // TODO
-    // {'chain': [{'left': 'a', 'center': 'b', right: 'c'}]}
+    // {'chain': [{'condition': 'a', 'do': ['b'], 'stop': 'c'}]
+    for (i in obj.chain){
+        var link = obj.chain[i];
+        evaluation = this.compare(link.comparison);
+        if ( evaluation == true ){
+            for (k in link.do){
+                this.deserializeGesture(link.do[k]);
+            }
+        }
+        if ( link.stop ) {
+            break;
+        }
+    }
 }
 
 Mezzo.prototype.binding = function(obj){
     // TODO
     // {'namespace': 'a', 'arguments': {}, 'locals': [], 'body': [{}]}
+    var chain = this._state.generatePathChain(obj.namespace);
+    var referenceDepth = this.state;
+    for ( i in chain ){
+        var link = chain[i];
+        if (!referenceDepth.hasOwnProperty(link) ||
+            !referenceDepth[link].constructor.name == "Object"){
+            referenceDepth[link] = {'body': obj.body, 'arguments': obj.arguments, 'locals': obj.locals};
+        }
+        referenceDepth = referenceDepth[link];
+    }
 }
 
 Mezzo.prototype.invoke = function(obj){
     // TODO
     // {'namespace': 'a', 'arguments': {}}
+    var func = this.get(obj.namespace);
+    // func[arguments] = obj.arguments
+    var chain = this._state.generatePathChain(obj.namespace);
+    var referenceDepth = this.state;
+    for ( i in chain ){
+        var link = chain[i];
+        if (i >= chain.length - 1){
+            func.arguments = obj.arguments;
+            referenceDepth[link] = func;
+            break;
+        }
+        referenceDepth = referenceDepth[link];
+    }
+    for ( i in func.body ) {
+        this.deserializeGesture(func.body[i]);
+    }
+
 }
 
-Mezzo.prototype.flow = function(obj){
-    // TODO
-    // {'chain': [{if': 'a', 'do': 'b', 'stop': 'c'}]
-}
 
-Mezzo.prototype.alter = function(obj){
-    // TODO
-    // {'left': 'a', 'center': 'b', 'right': 'c'}
-}
+
+
 
 
 Mezzo.prototype.deserializeGesture = function(obj){
@@ -179,22 +322,100 @@ Mezzo.prototype.deserializeGesture = function(obj){
 }
 
 
-function runTests(){
+function testSetState(){
     m = new Mezzo();
     m.state = {'foo': {'baz': 1}};
     // should show { foo: { baz: 1 } }
     console.log(m._state.objects)
-    
-    // should show 1
-    console.log(m.get({'foo': 'baz'}));
+}
+
+function testSet(){
+    m = new Mezzo({'foo' : 'baz'});
+    m.set({'foo': {'baz': 1}});
     // should show { foo: { baz: 1 } }
     console.log(m.state);
-    
+}
+
+function testGet(){
+    m = new Mezzo();
+    m.state = {'foo': {'baz': 1}};
+    // should show 1
+    console.log(m.get({'foo': 'baz'}));
+}
+
+function testDeclare(){
     m = new Mezzo();
     m.declare({'namespace': {'foo': {'baz': 'bar'}}});
-    // should show 'bar'
     console.log(m.state.foo.baz);
+}
+
+function testAlter(){
+    var m = new Mezzo({'foo': {'a': 0, 'b': 1, 'c': 2, 'd': 0}});
+    m.alter({'left': {'foo': 'c'}, 'center': 'pluseq', 'right': {'foo' : 'b'}});
+    console.log(m.state);
+    // { foo: { a: 0, b: 1, c: 3, d: 0 } }
 
 }
 
-runTests()
+function testCompare(){
+    var m = new Mezzo({'foo': {'a': 0, 'b': 1, 'c': 2, 'd': 0}});
+    var chain = [{"left": {"foo": "a"},
+                  "center": "eq",
+                  "right": {"foo": "d"}},
+                 {"continue": "and"},
+                 {"left": {'foo': 'c'},
+                  "center": "gt",
+                  "right": {'foo': 'b'}}];
+    // should show 'true'
+    console.log(m.compare({'chain': chain}));
+}
+
+function testFlow(){
+    var flow = {'chain': [{'comparison': {'chain' : [{"left": {"foo": "a"}, "center": "eq", "right": {"foo": "d"}}]},
+                           'do': [{'type': 'alteration', 'left': {'foo': 'c'}, 'center': 'pluseq', 'right': {'foo' : 'b'}}],
+                           'stop': false }]};
+    var m = new Mezzo({'foo': {'a': 0, 'b': 1, 'c': 2, 'd': 0}});
+    m.flow(flow);
+    // { foo: { a: 0, b: 1, c: 3, d: 0 } }
+    console.log(m.state)
+}
+
+
+function testBinding(){
+    var bound = {'namespace': {'foo': 'myfunction'}, 
+                 'arguments': {'argone': 1, 'argtwo': 2},
+                 'locals': ['localone', 'localtwo'],
+                 'body': [{'type': 'alteration',
+                          'left': {'foo': {'baz': 'bar'}},
+                          'center': 'pluseq',
+                          "right": {'foo': 'adder'}}]};
+    var m = new Mezzo({'foo': {'varone': 0, 'adder': 1}});
+    m.binding(bound);
+
+    // should show ['localone', 'localtwo']
+    console.log(m.state.foo.myfunction.locals)
+    // should show {'argone': 1, 'argtwo': 2}
+    console.log(m.state.foo.myfunction.arguments)
+    // should show [{'type': 'alteration',
+    //               'left': {'foo': {'baz': 'bar'}},
+    //               'center': 'pluseq',
+    //               "right": {'foo': 'adder'}}]
+    console.log(m.state.foo.myfunction.body)
+}
+
+function testInvocation(){
+    var bound = {'namespace': {'foo': 'myfunction'}, 
+                 'arguments': {'argone': 1, 'argtwo': 2},
+                 'locals': ['localone', 'localtwo'],
+                 'body': [{'type': 'alteration',
+                           'left': {'foo': 'varone'},
+                           'center': 'pluseq',
+                           "right": {'foo': 'adder'}}]};
+    var m = new Mezzo({'foo': {'varone': 0, 'adder': 1}});
+    m.binding(bound);
+    // should show 0
+    console.log(m.state.foo.varone)
+    m.invoke({'namespace': {'foo' : 'myfunction'}, 'arguments': {'argone': 3, 'argtwo': 4}})
+    // should show 1
+    console.log(m.state.foo.varone)
+}
