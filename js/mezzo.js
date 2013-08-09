@@ -82,11 +82,23 @@ MezzoState.prototype.setNameSpace = function(ns, v){
 function Mezzo (objects){
     // really trying to discourage any direct interaction
     // with the state object here
-    if (typeof objects != 'undefined'){
-        this._state = new MezzoState(objects);
+    if ( typeof(objects != 'undefined')
+         && objects.constructor.name == "Object" ){
+        if ( objects.hasOwnProperty('objects') ){
+            this._state = new MezzoState(objects.objects);
+        } else {
+            this._state = new MezzoState({});
+        }
+        if ( objects.hasOwnProperty('directives') ) {
+            this.directives = objects.directives;
+        } else {
+            this.directives = [];
+        }
     } else {
         this._state = new MezzoState({});
+        this.directives = [];
     }
+
     this.__defineGetter__("state", function(){
         return this._state.objects;
     });
@@ -103,6 +115,16 @@ function Mezzo (objects){
     this.set = function(ns){
         this._state.setNameSpace(ns);
     }
+}
+
+Mezzo.prototype.run = function(){
+    for ( i in this.directives ){
+        this.deserializeGesture(this.directives[i]);
+    }
+}
+
+Mezzo.deserialize = function(json){
+    return new Mezzo ( JSON.parse(json) );
 }
 
 Mezzo.prototype.declare = function(obj){
@@ -346,7 +368,7 @@ function testDeclare(){
 }
 
 function testAlter(){
-    var m = new Mezzo({'foo': {'a': 0, 'b': 1, 'c': 2, 'd': 0}});
+    var m = new Mezzo({'objects': {'foo': {'a': 0, 'b': 1, 'c': 2, 'd': 0}}});
     m.alter({'left': {'foo': 'c'}, 'center': 'pluseq', 'right': {'foo' : 'b'}});
     console.log(m.state);
     // { foo: { a: 0, b: 1, c: 3, d: 0 } }
@@ -354,7 +376,7 @@ function testAlter(){
 }
 
 function testCompare(){
-    var m = new Mezzo({'foo': {'a': 0, 'b': 1, 'c': 2, 'd': 0}});
+    var m = new Mezzo({'objects': {'foo': {'a': 0, 'b': 1, 'c': 2, 'd': 0}}});
     var chain = [{"left": {"foo": "a"},
                   "center": "eq",
                   "right": {"foo": "d"}},
@@ -370,7 +392,7 @@ function testFlow(){
     var flow = {'chain': [{'comparison': {'chain' : [{"left": {"foo": "a"}, "center": "eq", "right": {"foo": "d"}}]},
                            'do': [{'type': 'alteration', 'left': {'foo': 'c'}, 'center': 'pluseq', 'right': {'foo' : 'b'}}],
                            'stop': false }]};
-    var m = new Mezzo({'foo': {'a': 0, 'b': 1, 'c': 2, 'd': 0}});
+    var m = new Mezzo({'objects': {'foo': {'a': 0, 'b': 1, 'c': 2, 'd': 0}}});
     m.flow(flow);
     // { foo: { a: 0, b: 1, c: 3, d: 0 } }
     console.log(m.state)
@@ -385,7 +407,7 @@ function testBinding(){
                           'left': {'foo': {'baz': 'bar'}},
                           'center': 'pluseq',
                           "right": {'foo': 'adder'}}]};
-    var m = new Mezzo({'foo': {'varone': 0, 'adder': 1}});
+    var m = new Mezzo({'objects': {'foo': {'varone': 0, 'adder': 1}}});
     m.binding(bound);
 
     // should show ['localone', 'localtwo']
@@ -407,7 +429,7 @@ function testInvocation(){
                            'left': {'foo': 'varone'},
                            'center': 'pluseq',
                            "right": {'foo': 'adder'}}]};
-    var m = new Mezzo({'foo': {'varone': 0, 'adder': 1}});
+    var m = new Mezzo({'objects': {'foo': {'varone': 0, 'adder': 1}}});
     m.binding(bound);
     // should show 0
     console.log(m.state.foo.varone)
