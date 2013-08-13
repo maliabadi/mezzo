@@ -9,9 +9,30 @@ module Mezzo
 		end
 
 		def hashify_namespace ns
+
 		end
 
 		def chainify_namespace ns
+			chain = []
+			chainer = lambda do |hash, key, value|
+				chain << key
+				if value.is_a?(Hash)
+					value.each_pair do |k,v|
+						chainer.call(value, k, v)
+					end
+				end
+			end
+			ns.each_pair do |k,v|
+				chainer.call(ns, k, v)
+			end
+			return chain
+		end
+
+end
+			ns.each_pair do |k,v|
+				chainer.call(ns, k, v)	
+			end
+			return chain
 		end
 
 	end
